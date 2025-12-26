@@ -126,9 +126,9 @@ The model was trained on a custom combined dataset created by merging 5 public f
 
 | Class                     | Annotations | Percentage |
 | ------------------------- | ----------- | ---------- |
-| `mask_weared_incorrect` | 3,119       | 12.31%     |
-| `with_mask`             | 10,328      | 40.76%     |
-| `without_mask`          | 11,890      | 46.93%     |
+| `mask`                  | 3,119       | 12.31%     |
+| `no-mask`               | 10,328      | 40.76%     |
+| `mask_weared_incorrect` | 11,890      | 46.93%     |
 
 ### Training Configuration
 
