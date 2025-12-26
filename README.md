@@ -63,7 +63,7 @@ flowchart LR
     WP --> MODEL
 
     VP --> SMOOTH
-    
+  
     MODEL --> O1
     SMOOTH --> O2
     MODEL --> O3
@@ -73,30 +73,29 @@ flowchart LR
     O3 --> ST
 ```
 
-
 ## Architecture Explanation
 
-| Module | File | Responsibility |
-|--------|------|----------------|
-| **Model Layer** | `src/models.py` | Loads YOLOv5 weights via PyTorch Hub with Windows compatibility fixes; uses Streamlit resource caching |
-| **Image Processor** | `src/image_processor.py` | Single-frame inference—upload → detection → bounding box overlay → annotated image |
-| **Video Processor** | `src/video_processor.py` | Frame-by-frame detection with `BoxSmoother` class (EMA/moving-average/hybrid) and IoU-based object tracking |
-| **Webcam Processor** | `src/webcam_processor.py` | Real-time detection via `streamlit-webrtc` WebRTC streaming |
-| **UI Components** | `src/ui_components.py` | Centralized CSS styling and reusable UI elements |
-| **Configuration** | `utils/config.py` | Single source of truth for thresholds, colors, codec preferences |
+| Module                     | File                        | Responsibility                                                                                                |
+| -------------------------- | --------------------------- | ------------------------------------------------------------------------------------------------------------- |
+| **Model Layer**      | `src/models.py`           | Loads YOLOv5 weights via PyTorch Hub with Windows compatibility fixes; uses Streamlit resource caching        |
+| **Image Processor**  | `src/image_processor.py`  | Single-frame inference—upload → detection → bounding box overlay → annotated image                        |
+| **Video Processor**  | `src/video_processor.py`  | Frame-by-frame detection with `BoxSmoother` class (EMA/moving-average/hybrid) and IoU-based object tracking |
+| **Webcam Processor** | `src/webcam_processor.py` | Real-time detection via `streamlit-webrtc` WebRTC streaming                                                 |
+| **UI Components**    | `src/ui_components.py`    | Centralized CSS styling and reusable UI elements                                                              |
+| **Configuration**    | `utils/config.py`         | Single source of truth for thresholds, colors, codec preferences                                              |
 
 ## Engineering Decisions
 
-| Decision | Rationale |
-|----------|-----------|
-| **YOLOv5 over YOLOv8** | Mature ecosystem, stable PyTorch Hub loading, extensive community support; YOLOv8 had import issues during development |
+| Decision                                | Rationale                                                                                                                      |
+| --------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
+| **YOLOv5 over YOLOv8**            | Mature ecosystem, stable PyTorch Hub loading, extensive community support; YOLOv8 had import issues during development         |
 | **Custom dataset (8,065 images)** | Combined 5 public datasets to improve class balance and diversity; single datasets had insufficient `incorrect_mask` samples |
-| **896×896 input resolution** | Higher than default 640 improves small face detection; balanced against inference speed |
-| **EMA smoothing (α=0.6)** | Simpler than Kalman filters, sufficient for bounding box stabilization without state explosion |
-| **IoU-based tracking** | Lightweight object association without DeepSORT/ByteTrack complexity; works well for static camera scenarios |
-| **40% confidence threshold** | Empirically tuned to balance false positives vs missed detections |
-| **Label smoothing (0.1)** | Reduces overconfidence during training, improves generalization |
-| **Freeze first 10 layers** | Transfer learning from COCO pretrained weights; only fine-tune detection head |
+| **896×896 input resolution**     | Higher than default 640 improves small face detection; balanced against inference speed                                        |
+| **EMA smoothing (α=0.6)**        | Simpler than Kalman filters, sufficient for bounding box stabilization without state explosion                                 |
+| **IoU-based tracking**            | Lightweight object association without DeepSORT/ByteTrack complexity; works well for static camera scenarios                   |
+| **40% confidence threshold**      | Empirically tuned to balance false positives vs missed detections                                                              |
+| **Label smoothing (0.1)**         | Reduces overconfidence during training, improves generalization                                                                |
+| **Freeze first 10 layers**        | Transfer learning from COCO pretrained weights; only fine-tune detection head                                                  |
 
 ## Model Training Details
 
@@ -104,32 +103,32 @@ flowchart LR
 
 The model was trained on a custom combined dataset created by merging 5 public face mask datasets:
 
-| Source | Original Format | Images | Classes |
-|--------|-----------------|--------|---------|
-| [Roboflow Real-time Face Mask](https://universe.roboflow.com/group-tbd/real-time-face-mask-detection-and-validation-system-dataset) | YOLOv5 PyTorch | ~3,000 | 3 |
-| [Kaggle Face Mask Detection](https://www.kaggle.com/datasets/andrewmvd/face-mask-detection) | PASCAL VOC | ~850 | 3 |
-| [Kaggle Face Mask YOLO Format](https://www.kaggle.com/datasets/aditya276/face-mask-dataset-yolo-format) | YOLO | ~1,500 | 2 |
-| [Kaggle Labeled Mask YOLO_darknet](https://www.kaggle.com/datasets/techzizou/labeled-mask-dataset-yolo-darknet) | YOLO | ~1,200 | 2 |
-| [GitHub MINED30 Face Mask](https://github.com/MINED30/Face_Mask_Detection_YOLO) | YOLO | ~1,500 | 3 |
+| Source                                                                                                                           | Original Format | Images | Classes |
+| -------------------------------------------------------------------------------------------------------------------------------- | --------------- | ------ | ------- |
+| [Roboflow Real-time Face Mask](https://universe.roboflow.com/group-tbd/real-time-face-mask-detection-and-validation-system-dataset) | YOLOv5 PyTorch  | ~3,000 | 3       |
+| [Kaggle Face Mask Detection](https://www.kaggle.com/datasets/andrewmvd/face-mask-detection)                                         | PASCAL VOC      | ~850   | 3       |
+| [Kaggle Face Mask YOLO Format](https://www.kaggle.com/datasets/aditya276/face-mask-dataset-yolo-format)                             | YOLO            | ~1,500 | 2       |
+| [Kaggle Labeled Mask YOLO_darknet](https://www.kaggle.com/datasets/techzizou/labeled-mask-dataset-yolo-darknet)                     | YOLO            | ~1,200 | 2       |
+| [GitHub MINED30 Face Mask](https://github.com/MINED30/Face_Mask_Detection_YOLO)                                                     | YOLO            | ~1,500 | 3       |
 
 **Final Dataset Statistics:**
 
-| Split | Images | Annotations |
-|-------|--------|-------------|
-| Train | 7,323 | — |
-| Val | 437 | — |
-| Test | 305 | — |
+| Split           | Images          | Annotations      |
+| --------------- | --------------- | ---------------- |
+| Train           | 7,323           | —               |
+| Val             | 437             | —               |
+| Test            | 305             | —               |
 | **Total** | **8,065** | **25,337** |
 
 ### Class Distribution
 
 ![Class Distribution](assets/class_distribution.png)
 
-| Class | Annotations | Percentage |
-|-------|-------------|------------|
-| `mask_weared_incorrect` | 3,119 | 12.31% |
-| `with_mask` | 10,328 | 40.76% |
-| `without_mask` | 11,890 | 46.93% |
+| Class                     | Annotations | Percentage |
+| ------------------------- | ----------- | ---------- |
+| `mask_weared_incorrect` | 3,119       | 12.31%     |
+| `with_mask`             | 10,328      | 40.76%     |
+| `without_mask`          | 11,890      | 46.93%     |
 
 ### Training Configuration
 
@@ -162,12 +161,12 @@ cos_lr: true    # Cosine LR scheduler
 
 ![Training Results](assets/training_results.png)
 
-| Metric | Value |
-|--------|-------|
-| **mAP@0.5** | 89.4% |
+| Metric                 | Value |
+| ---------------------- | ----- |
+| **mAP@0.5**      | 89.4% |
 | **mAP@0.5:0.95** | 60.1% |
-| **Precision** | 84.2% |
-| **Recall** | 84.1% |
+| **Precision**    | 84.2% |
+| **Recall**       | 84.1% |
 
 ### Precision-Recall Curve
 
@@ -187,33 +186,33 @@ cos_lr: true    # Cosine LR scheduler
 
 ## Tech Stack (With Purpose)
 
-| Tool | Purpose |
-|------|---------|
-| **Python 3.8+** | Runtime with async support for video processing |
-| **PyTorch + YOLOv5** | Object detection backbone; custom weights via `torch.hub` |
-| **OpenCV** | Frame extraction, video encoding (H.264/XVID), bounding box rendering |
-| **Streamlit** | Web UI framework—rapid ML app deployment without frontend code |
-| **streamlit-webrtc** | WebRTC integration for browser-based camera access |
-| **NumPy** | Efficient array operations for IoU calculations and frame manipulation |
-| **Pillow** | Image format handling for uploads |
+| Tool                       | Purpose                                                                |
+| -------------------------- | ---------------------------------------------------------------------- |
+| **Python 3.8+**      | Runtime with async support for video processing                        |
+| **PyTorch + YOLOv5** | Object detection backbone; custom weights via `torch.hub`            |
+| **OpenCV**           | Frame extraction, video encoding (H.264/XVID), bounding box rendering  |
+| **Streamlit**        | Web UI framework—rapid ML app deployment without frontend code        |
+| **streamlit-webrtc** | WebRTC integration for browser-based camera access                     |
+| **NumPy**            | Efficient array operations for IoU calculations and frame manipulation |
+| **Pillow**           | Image format handling for uploads                                      |
 
 ## Input/Output Specification
 
 ### Input Formats
 
-| Mode | Formats | Notes |
-|------|---------|-------|
-| Image | `.jpg`, `.jpeg`, `.png` | Single-frame detection |
-| Video | `.mp4`, `.avi`, `.mov` | Up to 100MB; frame-by-frame processing |
-| Webcam | Browser stream | Real-time via WebRTC |
+| Mode   | Formats                       | Notes                                  |
+| ------ | ----------------------------- | -------------------------------------- |
+| Image  | `.jpg`, `.jpeg`, `.png` | Single-frame detection                 |
+| Video  | `.mp4`, `.avi`, `.mov`  | Up to 100MB; frame-by-frame processing |
+| Webcam | Browser stream                | Real-time via WebRTC                   |
 
 ### Output
 
-| Mode | Output |
-|------|--------|
-| Image | Annotated image with colored bounding boxes and confidence scores |
-| Video | Downloadable `.mp4` with smooth, temporally-consistent bounding boxes |
-| Webcam | Live overlay in browser window |
+| Mode   | Output                                                                  |
+| ------ | ----------------------------------------------------------------------- |
+| Image  | Annotated image with colored bounding boxes and confidence scores       |
+| Video  | Downloadable `.mp4` with smooth, temporally-consistent bounding boxes |
+| Webcam | Live overlay in browser window                                          |
 
 ### Detection Classes
 
@@ -260,6 +259,7 @@ streamlit run app.py
 ```
 
 The app opens at `http://localhost:8501` with three tabs:
+
 - **Image Upload**: Drag-and-drop image analysis
 - **Webcam Detection**: Real-time camera detection
 - **Video Processing**: Upload and process video files
@@ -325,4 +325,3 @@ face-mask-detection/
 
 - [Ultralytics YOLOv5](https://github.com/ultralytics/yolov5) for the detection framework
 - Dataset contributors on Roboflow, Kaggle, and GitHub
-- Streamlit team for the rapid prototyping framework
