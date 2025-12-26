@@ -1,4 +1,4 @@
-# odel Weights
+# Model Weights
 
 This directory should contain the trained YOLOv5 weights file: `best.pt`
 
